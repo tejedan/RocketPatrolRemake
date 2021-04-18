@@ -7,6 +7,7 @@ class Play extends Phaser.Scene{
         this.load.image('starfield', 'assets/starfield.png');
         this.load.image('rocket', 'assets/rocket.png');
         this.load.image('spaceship', 'assets/spaceship.png');
+        this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
     }
     create(){
         this.starfield = this.add.tileSprite(
@@ -60,7 +61,31 @@ class Play extends Phaser.Scene{
             keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
             keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
           
+            this.anims.create({
+                key: 'explode',
+                frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 9, first: 0}),
+                frameRate: 30
+            });
+        this.p1Score = 0;
+        let scoreConfig = {
+            fontFamily: 'Courier',
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'right',
+            padding: {
+              top: 5,
+              bottom: 5,
+            },
+            fixedWidth: 100
+          }
+          this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig);
           
+          scoreConfig.fixedWidth = 0;
+          this.clock = this.time.delayedCall(60000, () => {
+              this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5);
+              this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart', scoreConfig).setOrigin(0.5);
+          }, null, this);
 
     }
     update() {
@@ -74,16 +99,30 @@ class Play extends Phaser.Scene{
         this.checkCollision(this.p1Rocket, this.ship1);
         this.checkCollision(this.p1Rocket, this.ship2);
         this.checkCollision(this.p1Rocket, this.ship3);
+        
+
+        
     }
     checkCollision(rocket, ship){
         if(rocket.x > ship.x && 
            rocket.x < ship.x+ ship.width && 
            rocket.y +rocket.height > ship.y && 
            rocket.y < ship.y + ship.height){
-               ship.alpha = 0;
+               this.shipExplode(ship)
                rocket.reset();
                ship.reset();
            }
     }
-    
+     shipExplode(ship){
+         ship.alpha = 0
+         let boom = this.add.sprite(ship.x,ship.y,'explosion').setOrigin(0,0);
+         boom.anims.play('explode');
+         boom.on('animationcomplete', () => {
+             ship.reset();
+             ship.alpha = 0;
+             boom.destroy();
+         })
+         this.p1Score += 1;
+         this.scoreLeft.text = this.p1Score; 
+     }
 }
