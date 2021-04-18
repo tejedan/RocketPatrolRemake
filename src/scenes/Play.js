@@ -8,6 +8,9 @@ class Play extends Phaser.Scene{
         this.load.image('rocket', 'assets/rocket.png');
         this.load.image('spaceship', 'assets/spaceship.png');
         this.load.spritesheet('explosion', './assets/explosion.png', {frameWidth: 64, frameHeight: 32, startFrame: 0, endFrame: 9});
+        this.load.audio('sfx_select', './assets/blipSelect.wav');
+        this.load.audio('sfx_explosion', './assets/explosion.wav');
+        this.load.audio('sfx_rocket', './assets/rocketShot.wav');
     }
     create(){
         this.starfield = this.add.tileSprite(
@@ -130,6 +133,7 @@ class Play extends Phaser.Scene{
          boom.on('animationcomplete', () => {
              ship.reset();
              ship.alpha = 0;
+             this.sound.play('sfx_explosion');
              boom.destroy();
          })
          this.p1Score += 1;
